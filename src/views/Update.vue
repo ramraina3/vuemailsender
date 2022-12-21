@@ -91,6 +91,7 @@
         <td>
           <v-text-field
           ref="IncidentNumber"
+          name="IncidentNumber"
           v-model="IncidentNumber"
           :rules="[() => !!To || 'This field is required']"
           :error-messages="errorMessages"            
@@ -130,6 +131,7 @@
         <td>
           <v-text-field
           ref="ReasonforSeverityChange"
+          name="ReasonforSeverityChange"
           v-model="ReasonforSeverityChange"
           :rules="[() => !!To || 'This field is required']"
           :error-messages="errorMessages"            
@@ -153,7 +155,7 @@
       >
         <template v-slot:activator="{ on, attrs }">
           <v-text-field
-            name="enddate"
+            name="Date"
             v-model="stdate"
             label="Picker without buttons"
             prepend-icon="mdi-calendar"
@@ -184,7 +186,7 @@
       >
         <template v-slot:activator="{ on, attrs }">
           <v-text-field
-            name="enddate"
+            name="EndDate"
             v-model="date"
             label="Picker without buttons"
             prepend-icon="mdi-calendar"
@@ -297,6 +299,7 @@
         <template v-slot:activator="{ on, attrs }">
           <v-text-field
             v-model="endtime"
+            name="endtime"
             label="Picker in dialog"
             prepend-icon="mdi-clock-time-four-outline"
             readonly
@@ -361,6 +364,7 @@
         <td>
           <v-text-field
           ref="AffectedCustomer"
+          name="AffectedCustomer"
           v-model="AffectedCustomer"
           :rules="[() => !!To || 'This field is required']"
           :error-messages="errorMessages"            
@@ -375,6 +379,7 @@
         <td>
           <v-text-field
           ref="CustomerExperiencing"
+          name="CustomerExperiencing"
           v-model="CustomerExperiencing"
           :rules="[() => !!To || 'This field is required']"
           :error-messages="errorMessages"            
@@ -389,6 +394,7 @@
         <td>
           <v-text-field
           ref="IncidentCoordinator"
+          name="IncidentCoordinator"
           v-model="IncidentCoordinator"
           :rules="[() => !!To || 'This field is required']"
           :error-messages="errorMessages"            
@@ -403,6 +409,7 @@
         <td>
           <v-text-field
           ref="ConferenceBridge"
+          name="ConferenceBridge"
           v-model="ConferenceBridge"
           :rules="[() => !!To || 'This field is required']"
           :error-messages="errorMessages"            
@@ -417,6 +424,7 @@
         <td>
           <v-text-field
           ref="NextUpdate"
+          name="NextUpdate"
           v-model="NextUpdate"
           :rules="[() => !!To || 'This field is required']"
           :error-messages="errorMessages"            
@@ -431,7 +439,7 @@
         <td>
           <v-textarea
               v-model="Resolution"
-              name="Resolution: "
+              name="Resolution"
               clearable
               clear-icon="mdi-close-circle"
               label="Action"
@@ -447,7 +455,12 @@
       </v-card-text>
       <v-divider class="mt-12"></v-divider>
       <v-card-actions>
-        <v-btn text>
+        <v-btn 
+        text
+        v-bind="attrs"
+        @click="resetForm"
+        v-on="on"
+        >
           Cancel
         </v-btn>
         <v-spacer></v-spacer>
@@ -478,12 +491,17 @@
           Submit
         </v-btn>
       </v-card-actions>
+
     </v-card>
   </form>
+  
+  <!-- <Snackbar/> -->
   </div>
 </template>
 
 <script>
+// import Snackbar from '@/components/Shared/Snackbar.vue';
+import Snackbar from '@/components/Shared/Snackbar.vue';
 import emailjs from '@emailjs/browser';
 import Localbase from 'localbase'
 let db = new Localbase('mailsender')
@@ -510,8 +528,7 @@ export default {
     IncidentCoordinator: null,
     ConferenceBridge: null,
     NextUpdate: null,
-    Resolution: null,      
-    
+    Resolution: null,    
     stdate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),      
     stmenu: false,
     date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),    
@@ -520,10 +537,14 @@ export default {
       menu2: false,
     endtime: null,
       modal2: false,
+      
     
 
   }),
 
+  components:{
+    Snackbar
+},
   computed: {
     form () {
       return {
@@ -576,7 +597,6 @@ export default {
     resetForm () {
       this.errorMessages = []
       this.formHasErrors = false
-
       Object.keys(this.form).forEach(f => {
         this.$refs[f].reset()
       })
@@ -607,23 +627,51 @@ export default {
         NextUpdate: this.NextUpdate,
         Resolution: this.Resolution }
 
-        db.collection('update').add(update).then(()=> {              
-            this.formHasErrors = false
-            Object.keys(this.form).forEach(f => {
-            if (!this.form[f]) this.formHasErrors = true
-            this.$refs[f].validate(true)
-            })
+        db.collection('update').add(update).then(()=> {
+          
+          this.$store.commit('showSnackbar')
+          this.formHasErrors = false
+          Object.keys(this.form).forEach(f => {
+          if (!this.form[f]) this.formHasErrors = true
+          this.$refs[f].validate(true)
+          })
         })
+        
 
         emailjs.sendForm('service_be07usv', 'template_qk3pyjq', this.$refs.form, 'SqhZvK_GYRfpaA67m')
         .then((result) => {
-            console.log('SUCCESS!', result.text);
+          console.log('SUCCESS!', result.text);
+          alert("Mail send");
         }, (error) => {
             console.log('FAILED...', error.text);
         });
           
       
     },
+    // clear(){
+    //     To = '',
+    //     Cc = '',
+    //     Bcc ='',
+    //     Subject='',
+    //     IncidentStatus='',
+    //     ReportedIssues='',
+    //     IncidentNumber='',
+    //     SeverityLevel='',
+    //     CurrentSeverityLevel='',
+    //     ReasonforSeverityChange='',
+    //     Date='',
+    //     EndDate='',
+    //     time='',
+    //     endtime='',
+    //     ApplicationAffected='',
+    //     AffectedRegion='',
+    //     AffectedCustomer='',
+    //     CustomerExperiencing='',
+    //     IncidentCoordinator='',
+    //     ConferenceBridge='',
+    //     NextUpdate='',
+    //     Resolution=''
+    // },
   },  
 }
 </script>

@@ -375,6 +375,7 @@ let db = new Localbase('mailsender')
       emailjs.sendForm('service_be07usv', 'template_oizf0ys', this.$refs.form, 'SqhZvK_GYRfpaA67m')
       .then((result) => {
           console.log('SUCCESS!', result.text);
+          alert("Mail send");
       }, (error) => {
           console.log('FAILED...', error.text);
       });
